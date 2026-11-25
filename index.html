@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#e8f1e8" />
+  <meta name="description" content="北海道弟子屈町の観光イラストマップ。観光スポット、飲食店、温泉、宿泊施設、お土産店を4言語で紹介します。" />
+  <title>Discover Teshikaga | 弟子屈町 観光マップ</title>
+  <style>
+    :root {
+      --ink: #253d38;
+      --muted: #647771;
+      --paper: #fbfaf4;
+      --green: #3e7661;
+      --green-dark: #285648;
+      --mint: #e5efe4;
+      --line: #e3e9df;
+      --gold: #e5ad55;
+      --shadow: 0 14px 40px rgba(36, 62, 51, .10);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: linear-gradient(180deg, #eff5ed 0, var(--paper) 360px);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    .page { width: min(1460px, calc(100% - 40px)); margin: 0 auto; padding: 26px 0 42px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom: 24px; }
+    .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+    .brand-mark { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; background:#dcebdd; font-size:25px; box-shadow: inset 0 0 0 1px rgba(52,100,76,.08); }
+    .brand small { display:block; color:var(--muted); font-size:11px; letter-spacing:.18em; font-weight:800; }
+    .brand strong { display:block; font-size:18px; letter-spacing:.02em; }
+    .language { display:flex; align-items:center; gap:7px; padding:6px; border:1px solid #dce6da; background:rgba(255,255,255,.84); border-radius:999px; box-shadow:0 5px 18px rgba(45,75,59,.06); }
+    .language button { border:0; border-radius:999px; padding:9px 13px; color:var(--muted); background:transparent; font-size:12px; font-weight:800; }
+    .language button.active { color:white; background:var(--green-dark); }
+    .hero { display:flex; align-items:end; justify-content:space-between; gap:25px; margin: 10px 0 22px; }
+    .eyebrow { color:#688374; font-size:11px; font-weight:900; letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px; }
+    h1 { font-size:clamp(31px, 4.3vw, 54px); line-height:1.08; letter-spacing:-.045em; margin:0; color:#25473c; }
+    .hero p { color:var(--muted); line-height:1.75; max-width:590px; margin:12px 0 0; font-size:14px; }
+    .hero-stamp { flex:0 0 auto; padding:12px 16px; border-radius:16px; background:#fff8e9; color:#896530; font-size:12px; font-weight:800; border:1px solid #f1e3c4; }
+    .toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px; background:rgba(255,255,255,.86); border:1px solid #e4e9df; border-radius:20px; box-shadow:0 8px 26px rgba(38,67,51,.05); margin-bottom:18px; }
+    .filters { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    .filter { display:flex; align-items:center; gap:7px; border:1px solid #e1e8df; background:#fff; color:#546a60; border-radius:999px; padding:9px 13px; font-size:12px; font-weight:800; transition:.18s ease; }
+    .filter:hover { transform:translateY(-1px); border-color:#afc7b5; }
+    .filter.active { background:#e3efe4; border-color:#bbd3c0; color:#285648; }
+    .search { position:relative; min-width:min(280px,100%); flex:0 1 330px; }
+    .search span { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#83948b; font-size:17px; }
+    .search input { width:100%; border:1px solid #e2e9e1; background:#fbfcf8; border-radius:999px; padding:11px 16px 11px 42px; outline:none; color:var(--ink); font-size:13px; }
+    .search input:focus { border-color:#8fb49a; box-shadow:0 0 0 3px rgba(91,140,103,.12); }
+    .workspace { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(330px, .82fr); gap:18px; align-items:stretch; }
+    .map-card, .detail-card, .list-card { background:rgba(255,255,255,.92); border:1px solid #e4e9df; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .panel-head { padding:18px 20px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .panel-head h2 { margin:0; font-size:16px; }
+    .panel-head p { margin:4px 0 0; font-size:11px; color:var(--muted); }
+    .map-legend { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; color:#697c73; font-size:10px; font-weight:700; }
+    .legend-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; }
+    .map-canvas { position:relative; min-height:610px; overflow:hidden; background:#eaf1e4; isolation:isolate; }
+    .map-art { position:absolute; inset:0; width:100%; height:100%; }
+    .map-label { position:absolute; z-index:1; color:#537365; font-weight:900; text-shadow:0 1px 0 rgba(255,255,255,.9); pointer-events:none; white-space:nowrap; }
+    .map-label.lake { color:#f6ffff; text-shadow:0 1px 3px rgba(20,78,102,.4); font-family:Georgia,serif; font-style:italic; letter-spacing:.05em; }
+    .map-label.tiny { font-size:10px; opacity:.82; }
+    .map-pin { position:absolute; z-index:3; transform:translate(-50%,-50%); border:0; background:transparent; padding:0; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:42px; }
+    .pin-bubble { display:grid; place-items:center; width:37px; height:37px; background:white; border:2px solid var(--pin-color, #3e7661); border-radius:50% 50% 50% 7px; transform:rotate(-45deg); box-shadow:0 5px 12px rgba(31,66,52,.2); transition:.18s ease; }
+    .pin-bubble span { transform:rotate(45deg); font-size:17px; line-height:1; }
+    .map-pin:hover .pin-bubble, .map-pin.selected .pin-bubble { transform:rotate(-45deg) scale(1.13); background:var(--pin-color, #3e7661); }
+    .map-pin:hover .pin-bubble span, .map-pin.selected .pin-bubble span { filter:grayscale(1) brightness(0) invert(1); }
+    .pin-label { background:rgba(255,255,255,.9); border:1px solid rgba(219,229,218,.95); box-shadow:0 3px 9px rgba(43,72,57,.09); border-radius:8px; padding:3px 7px; color:#355447; font-size:10px; font-weight:900; max-width:118px; overflow:hidden; text-overflow:ellipsis; }
+    .map-note { position:absolute; z-index:2; left:14px; bottom:13px; max-width:250px; border:1px solid rgba(255,255,255,.8); background:rgba(255,255,255,.8); border-radius:12px; padding:8px 11px; color:#657b70; font-size:10px; line-height:1.45; backdrop-filter:blur(8px); }
+    .north { position:absolute; right:20px; top:15px; z-index:2; display:grid; justify-items:center; color:#688274; font-size:10px; font-weight:900; }
+    .north b { font-size:22px; line-height:1; }
+    .side { display:flex; flex-direction:column; gap:18px; min-width:0; }
+    .detail-card { min-height:345px; }
+    .detail-visual { height:145px; position:relative; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#d5e9dc,#b5d4d0 50%,#e8e8c9); }
+    .detail-visual::before, .detail-visual::after { content:""; position:absolute; width:260px; height:150px; border-radius:50%; background:rgba(255,255,255,.22); transform:rotate(-18deg); }
+    .detail-visual::before { left:-65px; bottom:-100px; }
+    .detail-visual::after { right:-90px; top:-100px; background:rgba(255,255,255,.28); }
+    .detail-emoji { position:relative; z-index:1; font-size:66px; filter:drop-shadow(0 8px 8px rgba(39,76,59,.14)); }
+    .detail-visual small { position:absolute; z-index:1; bottom:12px; left:16px; color:#315c4a; font-size:10px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    .detail-content { padding:18px 20px 20px; }
+    .detail-category { display:inline-flex; align-items:center; gap:6px; background:#edf4ed; color:#4c745f; border-radius:999px; padding:5px 9px; font-size:10px; font-weight:900; }
+    .detail-content h3 { margin:10px 0 7px; font-size:21px; line-height:1.3; }
+    .detail-desc { color:#62766d; font-size:12px; line-height:1.8; margin:0 0 15px; }
+    .facts { display:grid; gap:9px; border-top:1px solid #edf0e9; padding-top:13px; }
+    .fact { display:grid; grid-template-columns:72px minmax(0,1fr); gap:9px; font-size:11px; line-height:1.55; }
+    .fact dt { color:#819088; font-weight:800; }
+    .fact dd { margin:0; color:#41594e; overflow-wrap:anywhere; }
+    .detail-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+    .action { display:inline-flex; justify-content:center; align-items:center; text-decoration:none; border:1px solid #dce7dd; background:#fff; color:#416451; border-radius:11px; padding:10px 12px; font-size:11px; font-weight:900; }
+    .action.primary { color:white; background:#315f4d; border-color:#315f4d; }
+    .list-card { flex:1; min-height:240px; }
+    .spot-list { padding:0 12px 12px; display:grid; gap:5px; max-height:300px; overflow:auto; }
+    .spot-row { display:flex; align-items:center; text-align:left; gap:11px; width:100%; padding:10px; border:1px solid transparent; border-radius:13px; background:transparent; color:var(--ink); }
+    .spot-row:hover, .spot-row.selected { background:#f0f6ef; border-color:#dfeade; }
+    .spot-icon { flex:0 0 38px; width:38px; height:38px; border-radius:12px; display:grid; place-items:center; background:#edf4ed; font-size:19px; }
+    .spot-meta { min-width:0; flex:1; }
+    .spot-meta strong { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .spot-meta small { display:block; color:#819087; font-size:10px; margin-top:3px; }
+    .spot-arrow { color:#9baa9f; font-size:17px; }
+    .empty { padding:30px 16px; text-align:center; color:#83928a; font-size:12px; }
+    .footer { display:flex; justify-content:space-between; gap:20px; padding:22px 4px 0; color:#84938a; font-size:10px; line-height:1.7; }
+    .footer a { color:#527563; }
+    .notice { margin-top:18px; border-radius:16px; padding:13px 16px; background:#fff8e8; border:1px solid #f1e6ca; color:#826b42; font-size:11px; line-height:1.7; }
+    .mobile-hint { display:none; color:#809087; font-size:10px; padding:0 18px 14px; }
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns:1fr; }
+      .side { display:grid; grid-template-columns:1fr 1fr; align-items:stretch; }
+      .detail-card { min-height:0; }
+      .list-card { min-height:0; }
+      .spot-list { max-height:490px; }
+    }
+    @media (max-width: 620px) {
+      .page { width:calc(100% - 22px); padding-top:13px; }
+      .topbar { align-items:flex-start; flex-direction:column; margin-bottom:19px; }
+      .language { align-self:stretch; justify-content:space-between; }
+      .language button { flex:1; padding:9px 4px; }
+      .hero { display:block; }
+      .hero-stamp { display:inline-block; margin-top:13px; }
+      .toolbar { padding:12px; }
+      .filters { gap:6px; }
+      .filter { padding:8px 10px; font-size:11px; }
+      .search { flex-basis:100%; }
+      .map-card .panel-head { align-items:flex-start; flex-direction:column; }
+      .map-legend { justify-content:flex-start; }
+      .map-canvas { min-height:540px; }
+      .map-label { font-size:10px; }
+      .map-pin { min-width:35px; }
+      .pin-bubble { width:32px; height:32px; }
+      .pin-bubble span { font-size:15px; }
+      .pin-label { font-size:9px; max-width:92px; }
+      .mobile-hint { display:block; }
+      .side { display:flex; }
+      .detail-visual { height:125px; }
+      .detail-content { padding:16px; }
+      .footer { flex-direction:column; gap:6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">🗻</div>
+        <div><small>AKAN-MASHU NATIONAL PARK</small><strong>Discover Teshikaga</strong></div>
+      </div>
+      <nav class="language" aria-label="Language selector">
+        <button class="active" data-lang="ja">日本語</button>
+        <button data-lang="en">English</button>
+        <button data-lang="zh">中文</button>
+        <button data-lang="ko">한국어</button>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow" data-i18n="eyebrow">HOKKAIDO · JAPAN</div>
+        <h1 data-i18n="title">弟子屈の、いいところ。</h1>
+        <p data-i18n="intro">湖と火山、温泉と森。阿寒摩周国立公園の自然に出会う旅へ。気になるピンを押して、弟子屈のお気に入りを見つけてください。</p>
+      </div>
+      <div class="hero-stamp" data-i18n="stamp">NATURE • LAKES • ONSEN</div>
+    </section>
+
+    <section class="toolbar" aria-label="Search and category filters">
+      <div class="filters" id="filters"></div>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" autocomplete="off" data-i18n-placeholder="search" placeholder="スポット名・施設名で検索" /></label>
+    </section>
+
+    <main class="workspace">
+      <section class="map-card">
+        <div class="panel-head">
+          <div><h2 data-i18n="mapTitle">弟子屈イラストマップ</h2><p data-i18n="mapSub">気になるピンをタップして、スポットの情報をチェック。</p></div>
+          <div class="map-legend" id="legend"></div>
+        </div>
+        <div class="map-canvas" id="map">
+          <svg class="map-art" viewBox="0 0 900 610" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustrated map of Teshikaga">
+            <defs>
+              <linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#edf3df"/><stop offset=".55" stop-color="#dcebd7"/><stop offset="1" stop-color="#c7dfc9"/></linearGradient>
+              <linearGradient id="lake" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#8ac8d0"/><stop offset="1" stop-color="#4d9eae"/></linearGradient>
+              <pattern id="dots" width="27" height="27" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="1.2" fill="#a8c7a6" opacity=".48"/><circle cx="20" cy="18" r="1" fill="#a8c7a6" opacity=".36"/></pattern>
+            </defs>
+            <rect width="900" height="610" fill="url(#land)"/>
+            <rect width="900" height="610" fill="url(#dots)"/>
+            <!-- forest bands -->
+            <path d="M0 0H900V130C790 95 725 152 630 119S460 146 355 104 140 150 0 112Z" fill="#bdd5b7" opacity=".55"/>
+            <path d="M0 480C145 423 212 478 318 449S517 468 620 425 788 443 900 395V610H0Z" fill="#b4d1b1" opacity=".48"/>
+            <!-- Kussharo caldera lake -->
+            <path d="M48 126C79 71 176 65 248 91C307 113 342 158 318 214C300 255 238 265 191 255C140 246 75 222 49 181C37 164 37 145 48 126Z" fill="#a8c7aa" opacity=".75"/>
+            <path d="M66 131C92 92 167 83 227 103C278 120 315 158 291 198C271 231 221 242 177 230C127 219 82 194 65 166C58 153 59 142 66 131Z" fill="url(#lake)" stroke="#f3f8e9" stroke-width="7"/>
+            <path d="M118 145C154 124 210 126 246 146" fill="none" stroke="#d5f0e8" stroke-width="4" opacity=".65"/>
+            <ellipse cx="185" cy="176" rx="25" ry="9" fill="#4b8d7e" opacity=".65"/>
+            <!-- Mashu Lake -->
+            <path d="M593 85C651 40 763 51 814 103C861 151 836 219 793 252C744 288 653 271 609 233C561 192 551 124 593 85Z" fill="#adc9a9" opacity=".8"/>
+            <path d="M614 99C665 65 753 70 796 115C834 155 813 209 778 232C737 260 666 245 628 212C591 180 579 124 614 99Z" fill="#4d9eae" stroke="#f3f8e9" stroke-width="7"/>
+            <path d="M651 113C691 92 749 99 778 126" fill="none" stroke="#c8ece6" stroke-width="4" opacity=".7"/>
+            <ellipse cx="712" cy="170" rx="17" ry="11" fill="#327b82" opacity=".8"/>
+            <!-- mountain ridges -->
+            <path d="M0 272L85 224L130 255L205 215L268 270L334 226L388 270L465 217L530 275L601 228L676 279L745 239L828 292L900 251V370H0Z" fill="#a8c49f" opacity=".7"/>
+            <path d="M0 297L82 260L132 283L202 249L270 300L338 263L410 305L477 258L547 305L610 269L680 315L753 276L827 326L900 294" fill="none" stroke="#7eaa88" stroke-width="10" opacity=".35"/>
+            <!-- hills and fields -->
+            <path d="M0 365C126 318 218 356 307 338S468 360 557 329 746 354 900 320V610H0Z" fill="#d7e8c8" opacity=".85"/>
+            <path d="M0 440C145 383 239 431 352 406S555 431 673 394 814 411 900 382" fill="none" stroke="#b2cda7" stroke-width="28" opacity=".65"/>
+            <!-- roads -->
+            <path d="M-10 514C127 460 195 470 294 436S459 393 548 360 711 320 909 350" fill="none" stroke="#fdf9e9" stroke-width="18" stroke-linecap="round"/>
+            <path d="M-10 514C127 460 195 470 294 436S459 393 548 360 711 320 909 350" fill="none" stroke="#d2b989" stroke-width="2.5" stroke-dasharray="9 10" stroke-linecap="round"/>
+            <path d="M418 610C407 531 421 480 445 426S480 337 494 280" fill="none" stroke="#fffaf0" stroke-width="13" stroke-linecap="round"/>
+            <path d="M418 610C407 531 421 480 445 426S480 337 494 280" fill="none" stroke="#d2b989" stroke-width="2" stroke-dasharray="8 9"/>
+            <path d="M300 0C313 86 356 163 398 229S444 322 445 426" fill="none" stroke="#fffaf0" stroke-width="9" opacity=".8"/>
+            <!-- town -->
+            <g fill="#f7f2df" stroke="#a6bd9e" stroke-width="2">
+              <rect x="345" y="444" width="27" height="20" rx="3"/><rect x="382" y="462" width="31" height="22" rx="3"/><rect x="433" y="447" width="23" height="18" rx="3"/><rect x="470" y="470" width="30" height="21" rx="3"/><rect x="516" y="450" width="25" height="19" rx="3"/><rect x="552" y="477" width="28" height="20" rx="3"/>
+            </g>
+            <g fill="#7d9e7f"><circle cx="333" cy="465" r="8"/><circle cx="421" cy="481" r="7"/><circle cx="493" cy="445" r="8"/><circle cx="570" cy="450" r="7"/></g>
+            <!-- volcano -->
+            <path d="M432 235L471 160L510 235Z" fill="#b4a88b" stroke="#8e9277" stroke-width="3"/>
+            <path d="M460 186C447 159 452 147 463 135M481 180C494 155 494 144 487 130" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+            <!-- pasture -->
+            <path d="M117 500C175 463 243 468 286 505C245 548 172 561 118 532Z" fill="#a9c98f" stroke="#86ad7a" stroke-width="3"/>
+            <path d="M143 505C175 488 217 489 253 510" fill="none" stroke="#d6e7b4" stroke-width="4"/>
+          </svg>
+          <div class="map-label lake" style="left:12%;top:28%;font-size:17px;" data-i18n="kussharoLabel">屈斜路湖</div>
+          <div class="map-label lake" style="left:69%;top:29%;font-size:16px;" data-i18n="mashuLabel">摩周湖</div>
+          <div class="map-label" style="left:47%;top:33%;font-size:12px;" data-i18n="ioLabel">硫黄山</div>
+          <div class="map-label tiny" style="left:42%;top:80%;" data-i18n="townLabel">弟子屈市街</div>
+          <div class="map-label tiny" style="left:15%;top:84%;" data-i18n="grassLabel">牧草地</div>
+          <div class="north"><b>↑</b><span>N</span></div>
+          <div id="pins"></div>
+          <div class="map-note" data-i18n="mapNote">※イラストマップは位置関係を示す模式図です。正確な場所・道順は各スポットの「Googleマップで見る」からご確認ください。</div>
+        </div>
+        <div class="mobile-hint" data-i18n="mobileHint">ピンをタップすると、下のスポット情報が切り替わります。</div>
+      </section>
+
+      <aside class="side">
+        <section class="detail-card" id="detail"></section>
+        <section class="list-card">
+          <div class="panel-head"><div><h2 data-i18n="listTitle">スポット一覧</h2><p id="resultCount"></p></div></div>
+          <div class="spot-list" id="spotList"></div>
+        </section>
+      </aside>
+    </main>
+
+    <div class="notice" data-i18n="notice">営業時間・料金・営業状況は変更される場合があります。お出かけ前に各施設の公式情報をご確認ください。掲載内容は観光案内の参考情報です。</div>
+    <footer class="footer">
+      <div>© Discover Teshikaga · <span data-i18n="footerText">A small illustrated guide to Teshikaga, Hokkaido.</span></div>
+      <div><span data-i18n="dataText">掲載情報の参照先：</span> <a href="https://www.masyuko.or.jp/" target="_blank" rel="noopener">摩周湖観光協会</a> · <a href="https://www.kawayu-onsen.com/" target="_blank" rel="noopener">川湯温泉</a> · <a href="https://www.visit-hokkaido.jp/" target="_blank" rel="noopener">HOKKAIDO LOVE!</a></div>
+    </footer>
+  </div>
+
+<script>
+const I18N = {
+  ja: {
+    eyebrow:'HOKKAIDO · JAPAN', title:'弟子屈の、いいところ。', intro:'湖と火山、温泉と森。阿寒摩周国立公園の自然に出会う旅へ。気になるピンを押して、弟子屈のお気に入りを見つけてください。', stamp:'NATURE • LAKES • ONSEN',
+    mapTitle:'弟子屈イラストマップ', mapSub:'気になるピンをタップして、スポットの情報をチェック。', listTitle:'スポット一覧', search:'スポット名・施設名で検索', mapNote:'※イラストマップは位置関係を示す模式図です。正確な場所・道順は各スポットの「Googleマップで見る」からご確認ください。', mobileHint:'ピンをタップすると、下のスポット情報が切り替わります。', notice:'営業時間・料金・営業状況は変更される場合があります。お出かけ前に各施設の公式情報をご確認ください。掲載内容は観光案内の参考情報です。', footerText:'北海道・弟子屈町のイラスト観光ガイド。', dataText:'掲載情報の参照先：',
+    all:'すべて', sightseeing:'観光スポット', food:'飲食店', onsen:'温泉', stay:'宿泊', shopping:'買い物', legendSight:'観光', legendFood:'飲食', legendOnsen:'温泉', legendStay:'宿泊', legendShop:'買い物',
+    kussharoLabel:'屈斜路湖', mashuLabel:'摩周湖', ioLabel:'硫黄山', townLabel:'弟子屈市街', grassLabel:'牧草地',
+    details:'スポット情報', address:'住所', hours:'営業時間', phone:'電話', source:'情報・公式サイト', maps:'Googleマップで見る', openSite:'公式情報を見る', noInfo:'情報は掲載されていません', noResults:'該当するスポットがありません。', countUnit:'件のスポット', selectHint:'地図のピンまたは一覧からスポットを選んでください。', area:'エリア', currentInfo:'施設情報は変更される場合があります。訪問前に最新情報をご確認ください。',
+  },
+  en: {
+    eyebrow:'HOKKAIDO · JAPAN', title:'Find your Teshikaga.', intro:'Lakes, volcanoes, hot springs and forests. Explore the nature of Akan-Mashu National Park. Select a pin to discover places to visit, eat, relax and stay.', stamp:'NATURE • LAKES • ONSEN',
+    mapTitle:'Illustrated map of Teshikaga', mapSub:'Select a pin to explore each place.', listTitle:'Places to explore', search:'Search places and facilities', mapNote:'This illustrated map is a schematic guide, not a navigation map. Check the exact location and route with “Open in Google Maps.”', mobileHint:'Select a pin to update the place details below.', notice:'Opening hours, prices and operating status may change. Please check each facility’s official information before your visit. This page is a visitor guide.', footerText:'An illustrated visitor guide to Teshikaga, Hokkaido.', dataText:'Information sources:',
+    all:'All', sightseeing:'Attractions', food:'Food & cafés', onsen:'Hot springs', stay:'Accommodation', shopping:'Shopping', legendSight:'Attractions', legendFood:'Food', legendOnsen:'Onsen', legendStay:'Stay', legendShop:'Shopping',
+    kussharoLabel:'Lake Kussharo', mashuLabel:'Lake Mashu', ioLabel:'Mt. Io', townLabel:'Teshikaga town', grassLabel:'Pastureland',
+    details:'Place information', address:'Address', hours:'Hours', phone:'Phone', source:'Information / official site', maps:'Open in Google Maps', openSite:'View official information', noInfo:'Not listed', noResults:'No matching places found.', countUnit:'places', selectHint:'Choose a place from the map pins or the list.', area:'Area', currentInfo:'Facility information may change. Please check the latest details before visiting.',
+  },
+  zh: {
+    eyebrow:'日本 · 北海道', title:'发现弟子屈的美好。', intro:'湖泊、火山、温泉与森林。开启阿寒摩周国立公园自然之旅。点击地图标记，寻找值得游览、用餐、泡汤和住宿的地方。', stamp:'自然 • 湖泊 • 温泉',
+    mapTitle:'弟子屈手绘旅游地图', mapSub:'点击标记，查看景点信息。', listTitle:'景点一览', search:'搜索景点或设施', mapNote:'※本图为示意地图，用于了解大致方位，并非导航地图。准确位置和路线请点击“在 Google 地图中查看”。', mobileHint:'点击地图标记，下方将显示相应地点的信息。', notice:'营业时间、价格和营业状态可能发生变化。出行前请查看各设施的官方信息。本页面仅供旅游参考。', footerText:'北海道弟子屈町手绘旅游指南。', dataText:'信息来源：',
+    all:'全部', sightseeing:'观光景点', food:'餐饮・咖啡馆', onsen:'温泉', stay:'住宿', shopping:'购物', legendSight:'景点', legendFood:'餐饮', legendOnsen:'温泉', legendStay:'住宿', legendShop:'购物',
+    kussharoLabel:'屈斜路湖', mashuLabel:'摩周湖', ioLabel:'硫黄山', townLabel:'弟子屈市区', grassLabel:'牧场',
+    details:'地点信息', address:'地址', hours:'营业时间', phone:'电话', source:'信息／官方网站', maps:'在 Google 地图中查看', openSite:'查看官方信息', noInfo:'暂无信息', noResults:'没有找到符合条件的地点。', countUnit:'个地点', selectHint:'请点击地图标记或从列表中选择地点。', area:'区域', currentInfo:'设施信息可能发生变化。访问前请确认最新信息。',
+  },
+  ko: {
+    eyebrow:'일본 · 홋카이도', title:'데시카가의 매력을 만나다.', intro:'호수와 화산, 온천과 숲. 아칸마슈 국립공원의 자연을 여행해 보세요. 지도 핀을 눌러 관광지와 맛집, 온천, 숙소를 찾아보세요.', stamp:'자연 • 호수 • 온천',
+    mapTitle:'데시카가 일러스트 지도', mapSub:'궁금한 핀을 선택해 장소 정보를 확인하세요.', listTitle:'장소 목록', search:'장소 및 시설 검색', mapNote:'※ 이 지도는 대략적인 위치 관계를 보여 주는 안내도이며 내비게이션 지도가 아닙니다. 정확한 위치와 경로는 ‘Google 지도에서 보기’를 확인하세요.', mobileHint:'핀을 누르면 아래 장소 정보가 바뀝니다.', notice:'영업시간, 요금 및 운영 상황은 변경될 수 있습니다. 방문 전에 각 시설의 공식 정보를 확인해 주세요. 본 페이지는 관광 안내용 참고 정보입니다.', footerText:'홋카이도 데시카가 일러스트 관광 안내.', dataText:'정보 출처:',
+    all:'전체', sightseeing:'관광 명소', food:'음식점·카페', onsen:'온천', stay:'숙박', shopping:'쇼핑', legendSight:'관광', legendFood:'음식', legendOnsen:'온천', legendStay:'숙박', legendShop:'쇼핑',
+    kussharoLabel:'굿샤로호', mashuLabel:'마슈호', ioLabel:'이오산', townLabel:'데시카가 시가지', grassLabel:'목초지',
+    details:'장소 정보', address:'주소', hours:'영업시간', phone:'전화', source:'정보·공식 사이트', maps:'Google 지도에서 보기', openSite:'공식 정보 보기', noInfo:'정보 없음', noResults:'검색 결과가 없습니다.', countUnit:'곳', selectHint:'지도 핀 또는 목록에서 장소를 선택하세요.', area:'지역', currentInfo:'시설 정보는 변경될 수 있습니다. 방문 전에 최신 정보를 확인해 주세요.',
+  }
+};
+
+const COLORS = { sightseeing:'#397c77', food:'#d28b42', onsen:'#4d94ad', stay:'#927d9d', shopping:'#9b9b4d' };
+const CATS = ['all','sightseeing','food','onsen','stay','shopping'];
+const SPOTS = [
+  {id:'mashu', x:75, y:24, icon:'💧', cat:['sightseeing'], area:'mashu', name:{ja:'摩周湖',en:'Lake Mashu',zh:'摩周湖',ko:'마슈호'}, desc:{ja:'深い青色の湖面と、霧が生み出す幻想的な景色で知られるカルデラ湖。展望台から雄大な景色を楽しめます。',en:'A caldera lake famed for its deep-blue water and mystical mist. Enjoy sweeping views from the observation decks.',zh:'以深邃的蓝色湖水和梦幻般的雾景闻名的火山口湖。可在观景台欣赏壮丽景色。',ko:'깊고 푸른 호수와 신비로운 안개로 유명한 칼데라호입니다. 전망대에서 웅장한 풍경을 감상할 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町（摩周湖展望台周辺）',en:'Around Lake Mashu observatories, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町（摩周湖展望台一带）',ko:'일본 홋카이도 가와카미군 데시카가정(마슈호 전망대 주변)'}, hours:{ja:'展望台・施設により異なります',en:'Varies by observatory and facility',zh:'因观景台及设施而异',ko:'전망대 및 시설에 따라 다름'}, url:'https://www.masyuko.or.jp/', source:'摩周湖観光協会', sourceUrl:'https://www.masyuko.or.jp/'},
+  {id:'kussharo', x:19, y:28, icon:'🌊', cat:['sightseeing'], area:'kussharo', name:{ja:'屈斜路湖',en:'Lake Kussharo',zh:'屈斜路湖',ko:'굿샤로호'}, desc:{ja:'雄大なカルデラの中に広がる湖。湖畔の散策やカヌーなど、季節ごとの自然を楽しめます。',en:'A vast lake within a volcanic caldera. Enjoy lakeside walks and seasonal nature, or explore the water by canoe.',zh:'坐落在辽阔火山口中的湖泊。可沿湖散步、划独木舟，感受四季自然风光。',ko:'광대한 칼데라 안에 펼쳐진 호수입니다. 호숫가 산책과 카누 등 계절마다 다른 자연을 즐길 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町屈斜路',en:'Kussharo, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町屈斜路',ko:'일본 홋카이도 가와카미군 데시카가정 굿샤로'}, url:'https://www.visit-hokkaido.jp/', source:'HOKKAIDO LOVE!', sourceUrl:'https://www.visit-hokkaido.jp/'},
+  {id:'sunayu', x:30, y:39, icon:'♨️', cat:['sightseeing','onsen'], area:'kussharo', name:{ja:'屈斜路湖 砂湯',en:'Sunayu Hot Sand Beach',zh:'屈斜路湖砂汤',ko:'굿샤로호 스나유'}, desc:{ja:'湖畔の砂を掘ると温泉が湧き出すユニークなスポット。冬にはオオハクチョウが訪れることもあります。',en:'A unique lakeside spot where warm spring water wells up when you dig into the sand. Whooper swans sometimes visit in winter.',zh:'在湖畔沙滩挖沙即可涌出温泉的独特景点。冬季有时还能看到大天鹅。',ko:'호숫가 모래를 파면 따뜻한 온천수가 솟아나는 특별한 장소입니다. 겨울에는 큰고니가 찾아오기도 합니다.'}, address:{ja:'北海道川上郡弟子屈町屈斜路湖畔',en:'Lakeside of Lake Kussharo, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町屈斜路湖畔',ko:'일본 홋카이도 가와카미군 데시카가정 굿샤로호 호숫가'}, url:'https://www.visit-hokkaido.jp/spa/spot/detail_12084.html', source:'北海道公式観光サイト', sourceUrl:'https://www.visit-hokkaido.jp/spa/spot/detail_12084.html'},
+  {id:'io', x:52, y:30, icon:'🌋', cat:['sightseeing'], area:'kawayu', name:{ja:'硫黄山（アトサヌプリ）',en:'Mt. Io (Atosa-nupuri)',zh:'硫黄山（阿托萨努普里）',ko:'이오산(아토사누푸리)'}, desc:{ja:'噴気孔から白い噴煙が立ち上る活火山。火山の迫力を間近に感じられます。現地の立入規制や案内に従って見学してください。',en:'An active volcano with white steam rising from its fumaroles. Experience the power of the earth up close and follow all on-site safety notices.',zh:'一座活火山，白色蒸汽从喷气孔不断升起。请遵守现场安全指示及区域管制。',ko:'분기공에서 흰 연기가 피어오르는 활화산입니다. 현장의 안전 안내와 출입 통제를 따라 관람해 주세요.'}, address:{ja:'北海道川上郡弟子屈町川湯',en:'Kawayu, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤',ko:'일본 홋카이도 가와카미군 데시카가정 가와유'}, hours:{ja:'見学時間・駐車場は公式情報をご確認ください',en:'Check official information for visiting and parking hours',zh:'参观时间及停车信息请查看官方公告',ko:'관람 및 주차 시간은 공식 정보를 확인해 주세요'}, phone:'015-483-3511', url:'https://www.visit-hokkaido.jp/spot/detail_10481.html', source:'HOKKAIDO LOVE!', sourceUrl:'https://www.visit-hokkaido.jp/spot/detail_10481.html'},
+  {id:'kawayu', x:43, y:43, icon:'♨️', cat:['sightseeing','onsen'], area:'kawayu', name:{ja:'川湯温泉',en:'Kawayu Onsen',zh:'川汤温泉',ko:'가와유 온천'}, desc:{ja:'硫黄山の麓に広がる温泉街。温泉宿や日帰り入浴、散策を楽しめます。',en:'A hot spring town at the foot of Mt. Io, with traditional inns, bathing options and pleasant walks.',zh:'位于硫黄山山麓的温泉街。可体验温泉旅馆、日归泡汤和街区漫步。',ko:'이오산 기슭에 자리한 온천 마을입니다. 온천 숙소와 당일 입욕, 산책을 즐길 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉',en:'Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천'}, phone:'015-482-2200', url:'https://www.kawayu-onsen.com/', source:'川湯温泉公式サイト', sourceUrl:'https://www.kawayu-onsen.com/'},
+  {id:'grassland', x:29, y:75, icon:'🐄', cat:['sightseeing'], area:'town', name:{ja:'900草原',en:'900 Grassland',zh:'900草原',ko:'900 초원'}, desc:{ja:'弟子屈の丘陵に広がる町営牧場。展望台から牧草地や周囲の山々を見渡せます。レストハウスの営業状況は事前にご確認ください。',en:'A municipal pasture on the hills of Teshikaga. Take in sweeping views of the grassland and surrounding mountains. Check the restaurant’s operating status before visiting.',zh:'位于弟子屈丘陵地带的町营牧场。可从观景台眺望草原和群山。参观前请确认休息站的营业情况。',ko:'데시카가 구릉에 펼쳐진 마을 운영 목장입니다. 전망대에서 초원과 주변 산을 조망할 수 있습니다. 레스토랑 운영 여부는 방문 전에 확인해 주세요.'}, address:{ja:'北海道川上郡弟子屈町鐺別418番地66',en:'418-66 Tobei, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町铛别418-66',ko:'일본 홋카이도 가와카미군 데시카가정 도베쓰 418-66'}, hours:{ja:'夏季開放。積雪・施設状況により変更',en:'Seasonal summer access; conditions may affect access',zh:'夏季开放；可能因积雪及设施状况而调整',ko:'여름철 개방. 적설 및 시설 상황에 따라 변경될 수 있음'}, phone:'015-482-2936', url:'https://www.town.teshikaga.hokkaido.jp/kurashi/soshikiichiran/norinka/2/1/895.html', source:'弟子屈町公式サイト', sourceUrl:'https://www.town.teshikaga.hokkaido.jp/kurashi/soshikiichiran/norinka/2/1/895.html'},
+  {id:'roadstation', x:51, y:81, icon:'🛍️', cat:['shopping','food'], area:'town', name:{ja:'道の駅 摩周温泉',en:'Roadside Station Mashu Onsen',zh:'道之站 摩周温泉',ko:'미치노에키 마슈온천'}, desc:{ja:'観光情報や地元のお土産、特産品を探せる休憩スポット。軽食や足湯も楽しめます。',en:'A convenient stop for local products, souvenirs and travel information. Take a break with snacks or enjoy the footbath.',zh:'可获取旅游信息、购买当地特产和纪念品的休息站。还可享用简餐和足汤。',ko:'관광 정보와 지역 특산품, 기념품을 만날 수 있는 휴게 명소입니다. 간식과 족욕도 즐길 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町湯の島3丁目5-5',en:'3-5-5 Yunoshima, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町汤之岛3丁目5-5',ko:'일본 홋카이도 가와카미군 데시카가정 유노시마 3초메 5-5'}, hours:{ja:'5〜10月 9:00〜18:00／11〜4月 9:00〜17:00（変更の場合あり）',en:'May–Oct 9:00–18:00 / Nov–Apr 9:00–17:00 (subject to change)',zh:'5月至10月 9:00–18:00／11月至4月 9:00–17:00（可能变更）',ko:'5~10월 9:00~18:00 / 11~4월 9:00~17:00 (변경될 수 있음)'}, phone:'015-482-2500', url:'https://www.masyuko.or.jp/michinoeki/', source:'道の駅・摩周温泉', sourceUrl:'https://www.masyuko.or.jp/michinoeki/'},
+  {id:'visitor', x:46, y:46, icon:'🏞️', cat:['sightseeing'], area:'kawayu', name:{ja:'川湯ビジターセンター',en:'Kawayu Visitor Center',zh:'川汤游客中心',ko:'가와유 비지터센터'}, desc:{ja:'阿寒摩周国立公園の自然や散策情報を知ることができる案内施設。周辺を歩く前の情報収集におすすめです。',en:'Learn about the nature and walking trails of Akan-Mashu National Park. A useful stop before exploring the area.',zh:'可了解阿寒摩周国立公园的自然环境和徒步路线。适合在周边游览前收集信息。',ko:'아칸마슈 국립공원의 자연과 산책 코스 정보를 알아볼 수 있는 안내 시설입니다.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉2丁目2-6',en:'2-2-6 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉2丁目2-6',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 2초메 2-6'}, hours:{ja:'4〜10月 8:00〜17:00／11〜3月 9:00〜16:00',en:'Apr–Oct 8:00–17:00 / Nov–Mar 9:00–16:00',zh:'4月至10月 8:00–17:00／11月至3月 9:00–16:00',ko:'4~10월 8:00~17:00 / 11~3월 9:00~16:00'}, phone:'015-483-4100', url:'https://www.kawayu-eco-museum.com/', source:'川湯エコミュージアムセンター', sourceUrl:'https://www.kawayu-eco-museum.com/'},
+  {id:'kumau shi', x:55, y:72, icon:'🍜', cat:['food'], area:'town', name:{ja:'くまうし 弟子屈本店',en:'Kumaushi Teshikaga Main Shop',zh:'Kumaushi 弟子屈总店',ko:'쿠마우시 데시카가 본점'}, desc:{ja:'弟子屈市街にある飲食店。そばなどの食事を楽しめます。営業時間や営業日は訪問前にご確認ください。',en:'A local restaurant in central Teshikaga, serving dishes including soba noodles. Check current hours before visiting.',zh:'位于弟子屈市区的餐厅，可品尝荞麦面等料理。请在到访前确认营业时间。',ko:'데시카가 시가지에 있는 음식점으로 소바 등을 즐길 수 있습니다. 방문 전에 영업시간을 확인해 주세요.'}, address:{ja:'北海道川上郡弟子屈町鈴蘭1丁目8-6',en:'1-8-6 Suzuran, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町铃兰1丁目8-6',ko:'일본 홋카이도 가와카미군 데시카가정 스즈란 1초메 8-6'}, phone:'015-482-2688', url:'https://www.google.com/maps/search/?api=1&query=くまうし+弟子屈本店', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=くまうし+弟子屈本店'},
+  {id:'kobo', x:61, y:66, icon:'☕', cat:['food'], area:'town', name:{ja:'工房一丁目',en:'Kobo 1-chome Café',zh:'工房一丁目咖啡馆',ko:'코보 1초메 카페'}, desc:{ja:'弟子屈市街のコーヒーショップ。観光の合間の休憩に。営業日は限られるため事前確認がおすすめです。',en:'A coffee shop in central Teshikaga, ideal for a relaxed break. Opening days are limited, so check ahead.',zh:'位于弟子屈市区的咖啡店，适合旅途中稍作休息。营业日期有限，建议提前确认。',ko:'데시카가 시가지에 있는 커피숍입니다. 여행 중 쉬어 가기 좋으며 영업일을 미리 확인하는 것이 좋습니다.'}, address:{ja:'北海道川上郡弟子屈町中央1丁目4-17',en:'1-4-17 Chuo, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町中央1丁目4-17',ko:'일본 홋카이도 가와카미군 데시카가정 주오 1초메 4-17'}, phone:'015-486-7778', url:'https://www.google.com/maps/search/?api=1&query=工房一丁目+弟子屈', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=工房一丁目+弟子屈'},
+  {id:'covo', x:34, y:63, icon:'🍕', cat:['food'], area:'countryside', name:{ja:'カフェ・バール COVO',en:'Café Bar COVO',zh:'COVO咖啡酒吧',ko:'카페 바르 COVO'}, desc:{ja:'札友内エリアのカフェ・レストラン。地元食材を使ったイタリア料理を楽しめるお店として紹介されています。',en:'A café and restaurant in the Satsutomai area, known for Italian dishes featuring local ingredients.',zh:'位于札友内地区的咖啡餐厅，以使用当地食材制作的意大利料理为特色。',ko:'삿토모나이 지역의 카페 겸 레스토랑으로, 지역 식재료를 활용한 이탈리아 요리를 소개하고 있습니다.'}, address:{ja:'北海道川上郡弟子屈町札友内89',en:'89 Satsutomai, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町札友内89',ko:'일본 홋카이도 가와카미군 데시카가정 삿토모나이 89'}, phone:'015-482-8557', url:'https://www.google.com/maps/search/?api=1&query=カフェ・バールCOVO+弟子屈', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=カフェ・バールCOVO+弟子屈'},
+  {id:'unite', x:40, y:51, icon:'🍛', cat:['food'], area:'kawayu', name:{ja:'soup curry & bar ユナイト',en:'Soup Curry & Bar UNITE',zh:'Soup Curry & Bar UNITE',ko:'수프 카레 & 바 유나이트'}, desc:{ja:'川湯温泉街にあるスープカレーのお店。営業日・営業時間は変更されることがあるため、訪問前に確認してください。',en:'A soup curry restaurant in Kawayu Onsen. Opening days and hours may change; please check before visiting.',zh:'位于川汤温泉街的汤咖喱餐厅。营业日期和时间可能变化，请在到访前确认。',ko:'가와유 온천 마을에 있는 수프 카레 음식점입니다. 영업일과 시간은 변경될 수 있으므로 방문 전에 확인해 주세요.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉1丁目4-24',en:'1-4-24 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉1丁目4-24',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 1초메 4-24'}, phone:'015-486-9103', url:'https://www.google.com/maps/search/?api=1&query=川湯温泉+ユナイト', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=川湯温泉+ユナイト'},
+  {id:'yu kichi', x:47, y:37, icon:'♨️', cat:['onsen'], area:'kawayu', name:{ja:'川湯公衆浴場 湯吉',en:'Yukichi Public Bath',zh:'川汤公共浴场 汤吉',ko:'가와유 공중목욕탕 유키치'}, desc:{ja:'川湯温泉街で親しまれている公衆浴場。地元の温泉文化を気軽に体験できます。',en:'A much-loved public bath in Kawayu Onsen, offering a simple way to experience the local hot-spring culture.',zh:'川汤温泉街深受当地人喜爱的公共浴场，可轻松体验当地温泉文化。',ko:'가와유 온천 마을에서 사랑받는 공중목욕탕으로, 지역 온천 문화를 편하게 체험할 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉3丁目1-7',en:'3-1-7 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉3丁目1-7',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 3초메 1-7'}, phone:'015-486-7518', url:'https://www.kawayu-onsen.com/hot-spring/', source:'川湯温泉公式サイト', sourceUrl:'https://www.kawayu-onsen.com/hot-spring/'},
+  {id:'kinkiyu', x:37, y:35, icon:'🏨', cat:['stay'], area:'kawayu', name:{ja:'お宿欣喜湯 別邸すいかずら',en:'Oyado Kinkiyu Bettei Suikazura',zh:'欣喜汤 别邸水葛',ko:'오야도 킨키유 별저 스이카즈라'}, desc:{ja:'川湯温泉街の宿泊施設。温泉と食事を楽しむ滞在先の候補です。',en:'An accommodation in Kawayu Onsen, offering a place to enjoy the hot springs and local cuisine.',zh:'川汤温泉街的住宿设施，可在此享受温泉和美食。',ko:'가와유 온천 마을에 있는 숙박 시설로, 온천과 식사를 즐길 수 있습니다.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉1丁目2-3',en:'1-2-3 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉1丁目2-3',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 1초메 2-3'}, phone:'015-486-9701', url:'https://www.kawayu-onsen.com/hot-spring/', source:'川湯温泉公式サイト', sourceUrl:'https://www.kawayu-onsen.com/hot-spring/'},
+  {id:'kawayuHotel', x:51, y:47, icon:'🏨', cat:['stay'], area:'kawayu', name:{ja:'川湯観光ホテル',en:'Kawayu Kanko Hotel',zh:'川汤观光酒店',ko:'가와유 관광호텔'}, desc:{ja:'川湯温泉街にある温泉宿。宿泊プランや入浴情報は公式サイトでご確認ください。',en:'A hot-spring hotel in Kawayu Onsen. Check its official website for accommodation plans and bathing information.',zh:'位于川汤温泉街的温泉酒店。住宿方案和泡汤信息请查看官方网站。',ko:'가와유 온천 마을에 있는 온천 호텔입니다. 숙박 상품과 입욕 정보는 공식 사이트에서 확인해 주세요.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉1丁目2-30',en:'1-2-30 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉1丁目2-30',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 1초메 2-30'}, phone:'015-483-2121', url:'https://www.kawayu-onsen.com/hot-spring/', source:'川湯温泉公式サイト', sourceUrl:'https://www.kawayu-onsen.com/hot-spring/'},
+  {id:'yunomy', x:56, y:43, icon:'🛏️', cat:['stay'], area:'kawayu', name:{ja:'川湯温泉ゲストハウス YUNOMY',en:'Kawayu Onsen Guesthouse YUNOMY',zh:'川汤温泉客栈 YUNOMY',ko:'가와유 온천 게스트하우스 YUNOMY'}, desc:{ja:'川湯温泉街のゲストハウス。気軽な滞在先を探している旅行者向けの宿です。',en:'A guesthouse in Kawayu Onsen, suitable for travelers looking for a relaxed and casual stay.',zh:'位于川汤温泉街的客栈，适合希望轻松入住的旅行者。',ko:'가와유 온천 마을에 있는 게스트하우스로, 편안하고 부담 없는 숙박을 원하는 여행객에게 좋습니다.'}, address:{ja:'北海道川上郡弟子屈町川湯温泉1丁目5-48',en:'1-5-48 Kawayu Onsen, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町川汤温泉1丁目5-48',ko:'일본 홋카이도 가와카미군 데시카가정 가와유온천 1초메 5-48'}, phone:'015-486-9103', url:'https://www.kawayu-onsen.com/hot-spring/', source:'川湯温泉公式サイト', sourceUrl:'https://www.kawayu-onsen.com/hot-spring/'},
+  {id:'biraju', x:67, y:76, icon:'🎁', cat:['shopping'], area:'town', name:{ja:'みやげ処 びらーじゅ',en:'Biraju Souvenir Shop',zh:'Biraju 纪念品商店',ko:'비라주 기념품점'}, desc:{ja:'摩周駅近くのお土産店。旅の記念や地域のお土産探しに。',en:'A souvenir shop near JR Mashu Station, a handy stop for local gifts and travel keepsakes.',zh:'位于摩周站附近的纪念品商店，适合选购当地礼物和旅行纪念品。',ko:'마슈역 근처의 기념품점으로, 지역 선물과 여행 기념품을 찾기 좋습니다.'}, address:{ja:'北海道川上郡弟子屈町朝日1丁目7-27',en:'1-7-27 Asahi, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町朝日1丁目7-27',ko:'일본 홋카이도 가와카미군 데시카가정 아사히 1초메 7-27'}, phone:'015-482-2588', url:'https://www.google.com/maps/search/?api=1&query=みやげ処びらーじゅ+弟子屈', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=みやげ処びらーじゅ+弟子屈'},
+  {id:'footbath', x:72, y:68, icon:'🦶', cat:['onsen'], area:'town', name:{ja:'JR摩周駅 ぽっぽ湯',en:'Poppo-yu Footbath (Mashu Station)',zh:'JR摩周站 足汤 Poppo-yu',ko:'JR 마슈역 족욕탕 폿포유'}, desc:{ja:'JR摩周駅の近くにある足湯スポット。列車やバスの待ち時間にも立ち寄れます。利用状況は現地でご確認ください。',en:'A footbath near JR Mashu Station, convenient while waiting for a train or bus. Please check local notices for availability.',zh:'位于JR摩周站附近的足汤景点，适合在等候列车或巴士时顺道体验。请确认现场开放情况。',ko:'JR 마슈역 근처의 족욕 장소입니다. 열차나 버스를 기다리는 동안 들르기 좋으며, 이용 가능 여부는 현장에서 확인해 주세요.'}, address:{ja:'北海道川上郡弟子屈町朝日1丁目（JR摩周駅付近）',en:'Near JR Mashu Station, Asahi 1-chome, Teshikaga, Hokkaido',zh:'日本北海道川上郡弟子屈町朝日1丁目（JR摩周站附近）',ko:'일본 홋카이도 가와카미군 데시카가정 아사히 1초메(JR 마슈역 부근)'}, url:'https://www.google.com/maps/search/?api=1&query=JR摩周駅+ぽっぽ湯', source:'Googleマップ', sourceUrl:'https://www.google.com/maps/search/?api=1&query=JR摩周駅+ぽっぽ湯'}
+];
+
+let lang = 'ja';
+let activeCategory = 'all';
+let selectedId = 'mashu';
+let query = '';
+
+function tr(key) { return I18N[lang][key] ?? I18N.ja[key] ?? key; }
+function textOf(value) { if (!value) return ''; return typeof value === 'string' ? value : (value[lang] || value.ja || ''); }
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function categoryName(cat) { return tr(cat); }
+function primaryCat(spot) { return spot.cat.find(c => c !== 'sightseeing') || spot.cat[0]; }
+function matches(spot) {
+  const catOk = activeCategory === 'all' || spot.cat.includes(activeCategory);
+  const q = query.trim().toLocaleLowerCase();
+  if (!q) return catOk;
+  const haystack = [textOf(spot.name), textOf(spot.desc), textOf(spot.address), ...Object.values(spot.name || {})].join(' ').toLocaleLowerCase();
+  return catOk && haystack.includes(q);
+}
+function googleMapsUrl(spot) {
+  const address = textOf(spot.address) || `${textOf(spot.name)} 北海道弟子屈町`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+function renderStaticText() {
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (I18N[lang][key] !== undefined) el.textContent = I18N[lang][key]; });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.dataset.i18nPlaceholder; if (I18N[lang][key] !== undefined) el.placeholder = I18N[lang][key]; });
+  document.querySelectorAll('[data-lang]').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+}
+function renderFilters() {
+  const icons = {all:'✦', sightseeing:'🏞️', food:'🍴', onsen:'♨️', stay:'🛏️', shopping:'🛍️'};
+  document.getElementById('filters').innerHTML = CATS.map(cat => `<button class="filter ${activeCategory===cat?'active':''}" data-cat="${cat}"><span>${icons[cat]}</span>${escapeHtml(tr(cat))}</button>`).join('');
+  document.getElementById('legend').innerHTML = [
+    ['sightseeing','legendSight'],['food','legendFood'],['onsen','legendOnsen'],['stay','legendStay'],['shopping','legendShop']
+  ].map(([cat,key]) => `<span><i class="legend-dot" style="background:${COLORS[cat]}"></i>${escapeHtml(tr(key))}</span>`).join('');
+}
+function renderPins(filtered) {
+  const pins = filtered.map(spot => {
+    const cat = primaryCat(spot);
+    return `<button class="map-pin ${selectedId===spot.id?'selected':''}" data-spot="${escapeHtml(spot.id)}" aria-label="${escapeHtml(textOf(spot.name))}" style="left:${spot.x}%;top:${spot.y}%;--pin-color:${COLORS[cat] || COLORS.sightseeing}"><span class="pin-bubble"><span>${spot.icon}</span></span><span class="pin-label">${escapeHtml(textOf(spot.name))}</span></button>`;
+  }).join('');
+  document.getElementById('pins').innerHTML = pins || '';
+}
+function renderList(filtered) {
+  document.getElementById('resultCount').textContent = `${filtered.length} ${tr('countUnit')}`;
+  const list = document.getElementById('spotList');
+  if (!filtered.length) { list.innerHTML = `<div class="empty">${escapeHtml(tr('noResults'))}</div>`; return; }
+  list.innerHTML = filtered.map(spot => `<button class="spot-row ${selectedId===spot.id?'selected':''}" data-spot="${escapeHtml(spot.id)}"><span class="spot-icon">${spot.icon}</span><span class="spot-meta"><strong>${escapeHtml(textOf(spot.name))}</strong><small>${escapeHtml(categoryName(primaryCat(spot)))}</small></span><span class="spot-arrow">›</span></button>`).join('');
+}
+function renderDetail(spot) {
+  const detail = document.getElementById('detail');
+  if (!spot) { detail.innerHTML = `<div class="detail-content"><span class="detail-category">✦ ${escapeHtml(tr('details'))}</span><h3>${escapeHtml(tr('selectHint'))}</h3></div>`; return; }
+  const cat = primaryCat(spot);
+  const facts = [
+    ['address', textOf(spot.address)], ['hours', textOf(spot.hours)], ['phone', spot.phone]
+  ].filter(([k,v]) => v);
+  detail.innerHTML = `
+    <div class="detail-visual"><div class="detail-emoji">${spot.icon}</div><small>DISCOVER TESHIKAGA</small></div>
+    <div class="detail-content">
+      <span class="detail-category"><i class="legend-dot" style="background:${COLORS[cat] || COLORS.sightseeing}"></i>${escapeHtml(categoryName(cat))}</span>
+      <h3>${escapeHtml(textOf(spot.name))}</h3>
+      <p class="detail-desc">${escapeHtml(textOf(spot.desc))}</p>
+      <dl class="facts">${facts.map(([key,val]) => `<div class="fact"><dt>${escapeHtml(tr(key))}</dt><dd>${escapeHtml(val)}</dd></div>`).join('')}</dl>
+      <div class="detail-actions"><a class="action primary" href="${escapeHtml(googleMapsUrl(spot))}" target="_blank" rel="noopener">${escapeHtml(tr('maps'))} ↗</a>${spot.sourceUrl ? `<a class="action" href="${escapeHtml(spot.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(tr('openSite'))} ↗</a>` : ''}</div>
+    </div>`;
+}
+function render() {
+  renderStaticText(); renderFilters();
+  const filtered = SPOTS.filter(matches);
+  if (!filtered.some(s => s.id === selectedId)) selectedId = filtered[0]?.id || null;
+  renderPins(filtered); renderList(filtered); renderDetail(SPOTS.find(s => s.id === selectedId));
+}
+function selectSpot(id) {
+  selectedId = id; render();
+  if (window.matchMedia('(max-width: 900px)').matches) document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+document.addEventListener('click', e => {
+  const langBtn = e.target.closest('[data-lang]');
+  if (langBtn) { lang = langBtn.dataset.lang; try { localStorage.setItem('teshikaga-lang', lang); } catch(_) {} render(); return; }
+  const catBtn = e.target.closest('[data-cat]');
+  if (catBtn) { activeCategory = catBtn.dataset.cat; render(); return; }
+  const spotBtn = e.target.closest('[data-spot]');
+  if (spotBtn) { selectSpot(spotBtn.dataset.spot); return; }
+});
+document.getElementById('search').addEventListener('input', e => { query = e.target.value; render(); });
+try { const stored = localStorage.getItem('teshikaga-lang'); if (I18N[stored]) lang = stored; } catch(_) {}
+render();
+</script>
+</body>
+</html>
